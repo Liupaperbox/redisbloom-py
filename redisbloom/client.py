@@ -173,7 +173,7 @@ class Client(): #changed from StrictRedis
             self.TOPK_INFO : TopKInfo,
         }
         for k, v in six.iteritems(MODULE_CALLBACKS):
-            self.set_response_callback(k, v)
+            self.redis.set_response_callback(k, v)
 
     @staticmethod
     def appendItems(params, items):
