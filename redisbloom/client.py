@@ -78,7 +78,7 @@ def parseToList(response):
             res.append(None)
     return res
 
-class Client(Redis): #changed from StrictRedis
+class Client(): #changed from StrictRedis
     """
     This class subclasses redis-py's `Redis` and implements 
     RedisBloom's commands.
@@ -127,11 +127,11 @@ class Client(Redis): #changed from StrictRedis
     TOPK_LIST = 'TOPK.LIST'
     TOPK_INFO = 'TOPK.INFO'
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, conn):
         """
         Creates a new RedisBloom client.
         """
-        Redis.__init__(self, *args, **kwargs)
+        self.redis = conn
             
         # Set the module commands' callbacks
         MODULE_CALLBACKS = {
@@ -239,7 +239,7 @@ class Client(Redis): #changed from StrictRedis
         self.appendExpansion(params, expansion)
         self.appendNoScale(params, noScale)
 
-        return self.execute_command(self.BF_RESERVE, *params)
+        return self.redis.execute_command(self.BF_RESERVE, *params)
         
     def bfAdd(self, key, item):
         """
@@ -247,7 +247,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, item]
         
-        return self.execute_command(self.BF_ADD, *params)
+        return self.redis.execute_command(self.BF_ADD, *params)
 
     def bfMAdd(self, key, *items):
         """
@@ -256,7 +256,7 @@ class Client(Redis): #changed from StrictRedis
         params = [key]
         params += items
 
-        return self.execute_command(self.BF_MADD, *params)
+        return self.redis.execute_command(self.BF_MADD, *params)
 
     def bfInsert(self, key, items, capacity=None, error=None, noCreate=None, expansion=None, noScale=None):
         """
@@ -273,7 +273,7 @@ class Client(Redis): #changed from StrictRedis
         self.appendExpansion(params, expansion)
         self.appendNoScale(params, noScale)
 
-        return self.execute_command(self.BF_INSERT, *params)
+        return self.redis.execute_command(self.BF_INSERT, *params)
 
     def bfExists(self, key, item):
         """
@@ -281,7 +281,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, item]
         
-        return self.execute_command(self.BF_EXISTS, *params)
+        return self.redis.execute_command(self.BF_EXISTS, *params)
 
     def bfMExists(self, key, *items):
         """
@@ -290,7 +290,7 @@ class Client(Redis): #changed from StrictRedis
         params = [key]
         params += items
 
-        return self.execute_command(self.BF_MEXISTS, *params)
+        return self.redis.execute_command(self.BF_MEXISTS, *params)
 
     def bfScandump(self, key, iter):
         """
@@ -303,7 +303,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, iter]
         
-        return self.execute_command(self.BF_SCANDUMP, *params)
+        return self.redis.execute_command(self.BF_SCANDUMP, *params)
 
     def bfLoadChunk(self, key, iter, data):
         """
@@ -314,14 +314,14 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, iter, data]
         
-        return self.execute_command(self.BF_LOADCHUNK, *params)
+        return self.redis.execute_command(self.BF_LOADCHUNK, *params)
 
     def bfInfo(self, key):
         """
         Returns capacity, size, number of filters, number of items inserted, and expansion rate.
         """
 
-        return self.execute_command(self.BF_INFO, key)
+        return self.redis.execute_command(self.BF_INFO, key)
 
 
 ################## Cuckoo Filter Functions ######################
@@ -335,7 +335,7 @@ class Client(Redis): #changed from StrictRedis
         self.appendBucketSize(params, bucket_size)
         self.appendMaxIterations(params, max_iterations)
 
-        return self.execute_command(self.CF_RESERVE, *params)
+        return self.redis.execute_command(self.CF_RESERVE, *params)
         
     def cfAdd(self, key, item):
         """
@@ -343,7 +343,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, item]
         
-        return self.execute_command(self.CF_ADD, *params)
+        return self.redis.execute_command(self.CF_ADD, *params)
 
     def cfAddNX(self, key, item):
         """
@@ -352,7 +352,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, item]
         
-        return self.execute_command(self.CF_ADDNX, *params)
+        return self.redis.execute_command(self.CF_ADDNX, *params)
 
     def cfInsert(self, key, items, capacity=None, nocreate=None):
         """
@@ -365,7 +365,7 @@ class Client(Redis): #changed from StrictRedis
         self.appendNoCreate(params, nocreate)
         self.appendItems(params, items)
 
-        return self.execute_command(self.CF_INSERT, *params)
+        return self.redis.execute_command(self.CF_INSERT, *params)
 
     def cfInsertNX(self, key, items, capacity=None, nocreate=None):
         """
@@ -378,7 +378,7 @@ class Client(Redis): #changed from StrictRedis
         self.appendNoCreate(params, nocreate)
         self.appendItems(params, items)
 
-        return self.execute_command(self.CF_INSERTNX, *params)
+        return self.redis.execute_command(self.CF_INSERTNX, *params)
 
     def cfExists(self, key, item):
         """
@@ -386,7 +386,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, item]
         
-        return self.execute_command(self.CF_EXISTS, *params)
+        return self.redis.execute_command(self.CF_EXISTS, *params)
 
     def cfDel(self, key, item):
         """
@@ -394,7 +394,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, item]
 
-        return self.execute_command(self.CF_DEL, *params)
+        return self.redis.execute_command(self.CF_DEL, *params)
 
     def cfCount(self, key, item):
         """
@@ -402,7 +402,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, item]
 
-        return self.execute_command(self.CF_COUNT, *params)
+        return self.redis.execute_command(self.CF_COUNT, *params)
 
     def cfScandump(self, key, iter):
         """
@@ -415,7 +415,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, iter]
         
-        return self.execute_command(self.CF_SCANDUMP, *params)
+        return self.redis.execute_command(self.CF_SCANDUMP, *params)
 
     def cfLoadChunk(self, key, iter, data):
         """
@@ -426,7 +426,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, iter, data]
         
-        return self.execute_command(self.CF_LOADCHUNK, *params)
+        return self.redis.execute_command(self.CF_LOADCHUNK, *params)
 
     def cfInfo(self, key):
         """
@@ -434,7 +434,7 @@ class Client(Redis): #changed from StrictRedis
         bucket size, expansion rate, and max iteration.
         """
 
-        return self.execute_command(self.CF_INFO, key)
+        return self.redis.execute_command(self.CF_INFO, key)
 
 ################## Count-Min Sketch Functions ######################
 
@@ -445,7 +445,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, width, depth]
         
-        return self.execute_command(self.CMS_INITBYDIM, *params)
+        return self.redis.execute_command(self.CMS_INITBYDIM, *params)
 
     def cmsInitByProb(self, key, error, probability):
         """
@@ -454,7 +454,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, error, probability]
         
-        return self.execute_command(self.CMS_INITBYPROB, *params)
+        return self.redis.execute_command(self.CMS_INITBYPROB, *params)
 
     def cmsIncrBy(self, key, items, increments):
         """
@@ -465,7 +465,7 @@ class Client(Redis): #changed from StrictRedis
         params = [key]
         self.appendItemsAndIncrements(params, items, increments)
         
-        return self.execute_command(self.CMS_INCRBY, *params)
+        return self.redis.execute_command(self.CMS_INCRBY, *params)
 
     def cmsQuery(self, key, *items):
         """
@@ -475,7 +475,7 @@ class Client(Redis): #changed from StrictRedis
         params = [key]
         params += items
         
-        return self.execute_command(self.CMS_QUERY, *params)
+        return self.redis.execute_command(self.CMS_QUERY, *params)
 
     def cmsMerge(self, destKey, numKeys, srcKeys, weights=[]):
         """
@@ -488,14 +488,14 @@ class Client(Redis): #changed from StrictRedis
         params += srcKeys
         self.appendWeights(params, weights)
 
-        return self.execute_command(self.CMS_MERGE, *params)
+        return self.redis.execute_command(self.CMS_MERGE, *params)
 
     def cmsInfo(self, key):
         """
         Returns width, depth and total count of the sketch.
         """
 
-        return self.execute_command(self.CMS_INFO, key)
+        return self.redis.execute_command(self.CMS_INFO, key)
 
 
 ################## Top-K Functions ######################
@@ -507,7 +507,7 @@ class Client(Redis): #changed from StrictRedis
         """
         params = [key, k, width, depth, decay]
         
-        return self.execute_command(self.TOPK_RESERVE, *params)
+        return self.redis.execute_command(self.TOPK_RESERVE, *params)
 
 
     def topkAdd(self, key, *items):
@@ -517,7 +517,7 @@ class Client(Redis): #changed from StrictRedis
         params = [key]
         params += items
         
-        return self.execute_command(self.TOPK_ADD, *params)
+        return self.redis.execute_command(self.TOPK_ADD, *params)
 
     def topkQuery(self, key, *items):
         """
@@ -526,7 +526,7 @@ class Client(Redis): #changed from StrictRedis
         params = [key]
         params += items
         
-        return self.execute_command(self.TOPK_QUERY, *params)
+        return self.redis.execute_command(self.TOPK_QUERY, *params)
 
     def topkCount(self, key, *items):
         """
@@ -535,21 +535,21 @@ class Client(Redis): #changed from StrictRedis
         params = [key]
         params += items
 
-        return self.execute_command(self.TOPK_COUNT, *params)
+        return self.redis.execute_command(self.TOPK_COUNT, *params)
 
     def topkList(self, key):
         """
         Return full list of items in Top-K list of ``key```.
         """
         
-        return self.execute_command(self.TOPK_LIST, key)
+        return self.redis.execute_command(self.TOPK_LIST, key)
 
     def topkInfo(self, key):
         """
         Returns k, width, depth and decay values of ``key``.
         """
         
-        return self.execute_command(self.TOPK_INFO, key)
+        return self.redis.execute_command(self.TOPK_INFO, key)
 
     def pipeline(self, transaction=True, shard_hint=None):
         """
@@ -561,8 +561,8 @@ class Client(Redis): #changed from StrictRedis
         Overridden in order to provide the right client through the pipeline.
         """
         p = Pipeline(
-            connection_pool=self.connection_pool,
-            response_callbacks=self.response_callbacks,
+            connection_pool=self.redis.connection_pool,
+            response_callbacks=self.redis.response_callbacks,
             transaction=transaction,
             shard_hint=shard_hint)
         return p
